@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Helper | Application Support Assistant</title>
+  <meta name="description" content="Evidence-based assistant for Application Support (APS) teams. Grounded strictly in approved local PDF runbooks with zero hallucination.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-light-green">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-icon" aria-hidden="true">SH</div>
+        <div class="brand-titles">
+          <h1>Support Helper <span class="brand-badge">APS Assistant</span></h1>
+          <p>Evidence-Based Incident & Recovery Assistant • Grounded in Approved PDF Knowledge</p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <div class="grounding-status-pill" title="FR-SUP-004 Enforced: Zero runbooks, commands, or contacts invented">
+          <div class="pulse-dot"></div>
+          <span id="header-kb-status">Local PDF Grounding Active (5 Runbooks)</span>
+        </div>
+        <button id="ai-settings-btn" class="theme-switch-btn" title="Configure AI Articulation Provider (Built-in, Ollama, OpenAI, Gemini)">
+          <span>✨</span> <span id="ai-provider-label">AI: Built-in</span>
+        </button>
+        <button id="theme-toggle-btn" class="theme-switch-btn" title="Toggle between Dark Green Canvas and Light Green Canvas">
+          <span id="theme-icon">🌙</span> <span id="theme-text">Dark Green Canvas</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="app-nav" aria-label="Main Navigation">
+    <div class="nav-container">
+      <button class="nav-tab active" data-tab="tab-assistant" id="nav-assistant-btn">
+        <span>⚡ Support Assistant</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-knowledge" id="nav-knowledge-btn">
+        <span>📚 Approved PDF Knowledge Base</span>
+        <span class="tab-badge" id="kb-count-badge">5</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-sequences" id="nav-sequences-btn">
+        <span>🔄 Recovery Sequences (FR-SUP-009)</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-instructions" id="nav-instructions-btn">
+        <span>🛠️ Agent Instructions (Admin)</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-policy" id="nav-policy-btn">
+        <span>🛡️ Grounding & Safety Policy</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="main-wrapper">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: SUPPORT ASSISTANT (MAIN SEARCH/RAG) -->
+    <!-- ========================================== -->
+    <section id="tab-assistant" class="tab-pane active" aria-labelledby="nav-assistant-btn">
+      
+      <!-- Quick Presets -->
+      <div class="quick-scenarios-bar">
+        <div class="scenarios-header">
+          <span>⚡ Fast Incident Presets (1-Click Test):</span>
+        </div>
+        <div class="scenarios-chips">
+          <button class="chip-btn" data-query="FIX_SESSION_DOWN: Counterparty Goldman Sachs disconnected on port 9801. MsgSeqNum too low Tag 34 mismatch.">
+            <span>🔌 FIX Session Drop (Tag 34)</span>
+          </button>
+          <button class="chip-btn" data-query="DB_POOL_EXHAUSTED: FXT_SETTLE_PROD pool 100% utilized. ORA-00020 maximum number of processes exceeded.">
+            <span>💾 Oracle Pool Exhaustion (ORA-00020)</span>
+          </button>
+          <button class="chip-btn" data-query="KAFKA_CONSUMER_LAG_HIGH: Group fxt-risk-calc-group lag > 250,000 on topic fxt.orders.executed.v1 CommitFailedException">
+            <span>📊 Kafka Trade Feed Lag</span>
+          </button>
+          <button class="chip-btn" data-query="HTTP Response 504 Gateway Timeout from swift-gateway.fxtrading.internal/api/v2/wires MT103 SSLHandshakeException">
+            <span>🏦 SWIFT Gateway 504 Timeout</span>
+          </button>
+          <button class="chip-btn" data-query="JOB_EXECUTION_FAILED: Step eodLedgerReconStep failed with ImbalanceException. Front Office != Back Office delta $180,000">
+            <span>📑 EOD Batch Reconciliation Imbalance</span>
+          </button>
+          <button class="chip-btn alert-fallback" data-query="Unknown hardware crash on GPU cluster node 99 mining crypto unmapped alert 404">
+            <span>⚠️ Unknown Incident (Verify Fallback FR-SUP-005)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Input Area Card (FR-SUP-001) -->
+      <div class="search-card">
+        <div class="card-title-row">
+          <h2 class="card-title">
+            <span>Incident / Symptom Input Area (FR-SUP-001)</span>
+          </h2>
+          <div class="filter-group">
+            <label for="filter-app" class="meta-label">App Filter:</label>
+            <select id="filter-app" class="filter-select">
+              <option value="ALL">All Applications</option>
+              <option value="FX Trading Core">FX Trading Core (FXT-Core)</option>
+              <option value="Settlement & Clearing">Settlement & Clearing (FXT-Settle)</option>
+              <option value="Market Data & Trade Analytics">Market Data & Trade Analytics</option>
+              <option value="Global Payments">Global Payments & SWIFT (FXT-Pay)</option>
+              <option value="Accounting & Ledger">Accounting & Ledger (FXT-Ledger)</option>
+            </select>
+
+            <label for="filter-env" class="meta-label">Environment:</label>
+            <select id="filter-env" class="filter-select">
+              <option value="ALL">All Environments</option>
+              <option value="PROD">PROD</option>
+              <option value="UAT">UAT</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-area-wrapper">
+          <textarea 
+            id="support-query-input" 
+            class="support-textarea" 
+            placeholder="Paste or enter issue description, error message, alert payload, email text, application name, service name, or operational symptom..."
+            aria-label="Incident input area"
+          ></textarea>
+        </div>
+
+        <div class="action-row">
+          <div class="action-tip">
+            <span>💡 Grounded solely in approved local PDF runbooks. Hallucinations prohibited (FR-SUP-004).</span>
+          </div>
+          <div class="btn-group">
+            <button id="clear-input-btn" class="btn btn-secondary">Clear</button>
+            <button id="search-runbook-btn" class="btn btn-primary">
+              <span>🔍 Search Approved Knowledge</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Box -->
+      <div id="loading-indicator" class="loading-box">
+        <div class="spinner"></div>
+        <p><strong>Querying Approved Local PDF Knowledge Base...</strong></p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Evaluating semantic relevance, error signatures, and grounding citations.</p>
+      </div>
+
+      <!-- Results Display Container (FR-SUP-003, FR-SUP-004, FR-SUP-005) -->
+      <div id="results-container" class="results-container">
+        
+        <!-- Case A: Grounded Match Banner -->
+        <div id="evidence-banner" class="evidence-banner">
+          <div class="evidence-left">
+            <div class="evidence-score-badge">
+              <span id="evidence-score-value">98.0%</span>
+              <span class="evidence-score-label">Relevance</span>
+            </div>
+            <div class="evidence-text">
+              <h3 id="evidence-doc-title">Approved Runbook Matched</h3>
+              <p id="evidence-citation-line">Grounded in FXT-RUN-001_FIX_Engine_Disconnection.pdf • Page 1-3</p>
+            </div>
+          </div>
+          <div class="evidence-actions">
+            <button id="view-doc-btn" class="btn btn-secondary" style="color: #ffffff; background: rgba(255,255,255,0.15); border-color: var(--lg-400);">
+              📄 View PDF Details
+            </button>
+            <a id="download-pdf-link" href="#" target="_blank" class="btn btn-secondary" style="color: #ffffff; background: rgba(255,255,255,0.15); border-color: var(--lg-400); text-decoration: none;">
+              ⬇️ Download PDF
+            </a>
+          </div>
+        </div>
+
+        <!-- Case B: Unapproved Fallback Banner (FR-SUP-005) -->
+        <div id="fallback-banner" class="fallback-banner" style="display: none;">
+          <div class="fallback-header">
+            <span style="font-size: 26px;">⚠️</span>
+            <div>
+              <h3>No Approved Runbook Procedure Found in Knowledge Base</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+                Confidence score is below the approved threshold. Strict anti-hallucination policy applied.
+              </p>
+            </div>
+          </div>
+
+          <div class="fallback-policy-box">
+            🛡️ <strong>ANTI-HALLUCINATION POLICY ENFORCED (FR-SUP-004):</strong> Support Helper will not invent or guess 
+            recovery steps, server hostnames, database commands, or contacts when no supporting source exists.
+          </div>
+
+          <div style="margin-top: 14px;">
+            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">
+              Standard Incident Escalation Path (FR-SUP-005):
+            </h4>
+            <div class="escalation-grid" id="fallback-escalation-grid">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <div style="margin-top: 18px;" id="fallback-checklist-box">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Grounded Content View (FR-SUP-003, FR-SUP-006, FR-SUP-009, FR-SUP-010) -->
+        <div id="grounded-content-view">
+          
+          <!-- Section: AI Articulated Guidance (Grounded in PDF) -->
+          <div class="ai-articulated-card" id="ai-articulated-card">
+            <div class="ai-card-header">
+              <div class="ai-title-wrap">
+                <span class="ai-sparkle-icon">✨</span>
+                <div>
+                  <h3 class="ai-card-title">AI Articulated Incident Guidance</h3>
+                  <p class="ai-card-subtitle" id="ai-articulated-by">Synthesized from approved PDF runbook facts with zero hallucination</p>
+                </div>
+              </div>
+              <div class="ai-badge-wrap">
+                <span class="ai-model-pill" id="ai-model-pill">Built-in Neural Articulator</span>
+              </div>
+            </div>
+            <div class="ai-card-body">
+              <div id="ai-provider-alert" style="display: none;" class="ai-alert-banner"></div>
+              <div class="ai-markdown-content" id="ai-markdown-content">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Metadata Grid (FR-SUP-006) -->
+          <div class="metadata-grid" id="metadata-grid">
+            <!-- Injected via JS -->
+          </div>
+
+          <!-- Section: Issue Summary & Causes -->
+          <div class="result-section">
+            <h3 class="section-head">
+              <span>🔍 1. Issue Summary & Technical Causes</span>
+            </h3>
+            <p id="res-summary-text" style="font-size: 14px; margin-bottom: 12px; font-weight: 600;"></p>
+            
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Detectable Symptoms & Alerts:</h4>
+            <ul id="res-symptoms-list" style="margin-left: 20px; margin-bottom: 14px; font-size: 13.5px; color: var(--text-muted);"></ul>
+
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Root Causes / Technical Diagnosis:</h4>
+            <ul id="res-causes-list" style="margin-left: 20px; font-size: 13.5px; color: var(--text-muted);"></ul>
+          </div>
+
+          <!-- Section: Critical Warnings (DO NOT DO) (FR-SUP-003) -->
+          <div class="warnings-card" id="warnings-card">
+            <h3 class="section-head" style="color: var(--dg-800); border-bottom-color: var(--dg-600);">
+              <span>🚨 Mandatory Safety Directives (DO NOT DO)</span>
+            </h3>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 10px;">
+              Review these prohibited actions before initiating any recovery attempt:
+            </p>
+            <div id="warnings-list">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Section: Numbered Resolution Steps (FR-SUP-003) -->
+          <div class="result-section">
+            <h3 class="section-head">
+              <span>📋 2. Numbered Step-by-Step Resolution Procedures</span>
+            </h3>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">
+              Execute steps sequentially. Support engineers may check off steps as they are completed:
+            </p>
+            <div class="steps-list" id="resolution-steps-list">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Section: Post-Recovery Verification Steps (FR-SUP-003) -->
+          <div class="result-section">
+            <h3 class="section-head">
+              <span>🧪 3. Post-Recovery Verification Procedures</span>
+            </h3>
+            <div id="verification-steps-list" style="margin-left: 20px; font-size: 13.5px; color: var(--text-main);">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Section: Dependency-Aware Service Recovery Sequence (FR-SUP-009) -->
+          <div class="result-section" id="recovery-sequence-section">
+            <h3 class="section-head">
+              <span>🔄 4. Dependency-Aware Service Recovery Sequence (FR-SUP-009)</span>
+            </h3>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">
+              Ordered startup/restart sequence respecting system dependencies. Respect explicit stop conditions:
+            </p>
+            <div class="recovery-chain" id="recovery-chain-list">
+              <!-- Injected via JS -->
+            </div>
+            <div class="stop-gate-box" id="stop-gate-box">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Section: Grounded Command Text Box (FR-SUP-010) -->
+          <div class="result-section" id="commands-section">
+            <h3 class="section-head">
+              <span>💻 5. Grounded Commands (PowerShell / Bash / SQL) (FR-SUP-010)</span>
+            </h3>
+            <div class="policy-disclaimer">
+              <span>⚠️</span>
+              <div>
+                <strong>POLICY ENFORCEMENT NOTICE (FR-SUP-010):</strong>
+                Commands are strictly grounded in approved runbook documentation.
+                Automated background execution is prohibited in accordance with system policy. All commands must be reviewed by the operator prior to manual execution.
+              </div>
+            </div>
+            <div id="commands-list-container" style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Section: Edge Cases & Escalation Protocol (FR-SUP-003) -->
+          <div class="result-section">
+            <h3 class="section-head">
+              <span>📞 6. Edge Cases & Escalation Information</span>
+            </h3>
+            <div style="margin-bottom: 14px;">
+              <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Edge Cases & Special Scenarios:</h4>
+              <ul id="edge-cases-list" style="margin-left: 20px; font-size: 13.5px; color: var(--text-muted);"></ul>
+            </div>
+            
+            <div class="escalation-grid" id="approved-escalation-grid">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Section: Source Citations & PDF Excerpts (FR-SUP-007) -->
+          <div class="result-section">
+            <h3 class="section-head">
+              <span>📄 7. Grounded Citations & Document Excerpts (FR-SUP-007)</span>
+            </h3>
+            <div class="citations-list" id="citations-list">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB 2: APPROVED PDF KNOWLEDGE BASE (REPOSITORY) -->
+    <!-- ============================================== -->
+    <section id="tab-knowledge" class="tab-pane" aria-labelledby="nav-knowledge-btn">
+      <div class="doc-header-row">
+        <div>
+          <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main);">
+            Approved PDF Runbook Repository (FR-SUP-006, FR-SUP-007)
+          </h2>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
+            Exported Wiki / Knowledge Base PDF runbooks approved for Application Support automation.
+          </p>
+        </div>
+        <button id="refresh-kb-btn" class="btn btn-secondary">🔄 Refresh Index</button>
+      </div>
+
+      <!-- Upload Dropzone (FR-SUP-007, FR-SUP-008) -->
+      <div class="upload-dropzone" id="upload-dropzone">
+        <div class="upload-icon">📤</div>
+        <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main);">Upload Approved Wiki / KB PDF Document</h3>
+        <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">
+          Click to browse or drop an exported Wiki runbook PDF here. It will be immediately parsed, chunked, and indexed into the RAG engine.
+        </p>
+        <input type="file" id="pdf-file-input" accept=".pdf" style="display: none;">
+      </div>
+
+      <!-- Knowledge Base Table -->
+      <div class="docs-table-wrapper">
+        <table class="docs-table" aria-label="Approved Runbooks Table">
+          <thead>
+            <tr>
+              <th>Doc ID</th>
+              <th>Runbook Title</th>
+              <th>Application</th>
+              <th>Service</th>
+              <th>Region</th>
+              <th>Version</th>
+              <th>Pages</th>
+              <th>Commands</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="kb-table-body">
+            <!-- Injected via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- TAB 3: OPERATIONAL RECOVERY SEQUENCES        -->
+    <!-- ============================================ -->
+    <section id="tab-sequences" class="tab-pane" aria-labelledby="nav-sequences-btn">
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main);">
+          Dependency-Aware Recovery Catalog (FR-SUP-009)
+        </h2>
+        <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
+          Comprehensive view of multi-service recovery sequences and explicit stop/escalate conditions.
+        </p>
+      </div>
+
+      <div id="sequences-catalog-container" style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- TAB 4: SAFETY & GROUNDING POLICY             -->
+    <!-- ============================================ -->
+    <section id="tab-policy" class="tab-pane" aria-labelledby="nav-policy-btn">
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main);">
+          Support Helper Safety & Evidence Architecture
+        </h2>
+        <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
+          Standard Operating Procedures and Policy Enforcement Matrix (FR-SUP-001 through FR-SUP-010).
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+        <div class="result-section">
+          <h3 style="font-size: 14.5px; font-weight: 700; color: var(--dg-800); margin-bottom: 8px;">
+            🛡️ Zero-Invention Rule (FR-SUP-004)
+          </h3>
+          <p style="font-size: 13px; color: var(--text-main);">
+            The assistant is strictly constrained to approved PDF runbooks. It does not synthesize non-existent server hostnames, procedures, ports, or escalation contacts.
+          </p>
+        </div>
+
+        <div class="result-section">
+          <h3 style="font-size: 14.5px; font-weight: 700; color: var(--dg-800); margin-bottom: 8px;">
+            ⚠️ Command Execution Safety (FR-SUP-010)
+          </h3>
+          <p style="font-size: 13px; color: var(--text-main);">
+            Automated execution of PowerShell, Bash, and SQL is disabled. Commands are rendered with syntax formatting for manual verification and controlled copy-paste by qualified operators.
+          </p>
+        </div>
+
+        <div class="result-section">
+          <h3 style="font-size: 14.5px; font-weight: 700; color: var(--dg-800); margin-bottom: 8px;">
+            🛑 Explicit Stop Gates (FR-SUP-009)
+          </h3>
+          <p style="font-size: 13px; color: var(--text-main);">
+            Each operational recovery sequence defines concrete abort criteria. If a heartbeat or connection check fails within the defined timeout window, recovery is aborted and escalated.
+          </p>
+        </div>
+
+        <div class="result-section">
+          <h3 style="font-size: 14.5px; font-weight: 700; color: var(--dg-800); margin-bottom: 8px;">
+            📄 Citation Integrity (FR-SUP-007)
+          </h3>
+          <p style="font-size: 13px; color: var(--text-main);">
+            Every recommendation preserves the original PDF document name, page number, and section header to provide an auditable chain of evidence for regulatory compliance.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB 5: AGENT INSTRUCTIONS (ADMIN PANEL)        -->
+    <!-- ============================================== -->
+    <section id="tab-instructions" class="tab-pane" aria-labelledby="nav-instructions-btn">
+      <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+        
+        <!-- Left Sidebar: Documents (RAG) & Mode Switch -->
+        <div style="width: 250px; min-width: 220px; background: var(--bg-surface); border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--card-shadow);">
+          <div style="display: flex; gap: 6px; margin-bottom: 16px;">
+            <button id="admin-switch-chat-btn" class="btn btn-secondary" style="flex: 1; padding: 6px 10px; font-size: 12px; justify-content: center;">Chat</button>
+            <button class="btn btn-primary" style="flex: 1; padding: 6px 10px; font-size: 12px; justify-content: center;">Admin</button>
+          </div>
+
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 10px;">
+            DOCUMENTS (RAG)
+          </div>
+
+          <button id="admin-upload-doc-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 8px; font-size: 12px; justify-content: center;">
+            Upload .txt / .md / .pdf
+          </button>
+          <button id="admin-sync-doc-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 14px; font-size: 12px; justify-content: center;">
+            Sync documents folder
+          </button>
+
+          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">
+            INDEXED SOURCES:
+          </div>
+          <div id="admin-doc-list" style="display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; font-family: monospace; color: var(--text-main);">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Right Main Area: Agent Instructions Editor -->
+        <div style="flex: 1; min-width: 320px; background: var(--bg-surface); border: 1.5px solid var(--border-subtle); border-radius: var(--radius-md); padding: 22px; box-shadow: var(--card-shadow);">
+          <div style="margin-bottom: 16px;">
+            <h2 style="font-size: 22px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+              Agent instructions
+            </h2>
+            <p style="font-size: 13px; color: var(--text-muted);">
+              Guides the agent's scope and behavior. Injected into the system prompt on every chat request.
+            </p>
+            <p class="instructions-provider-note">
+              Custom instructions are interpreted by OpenAI, Ollama, or Gemini. The built-in fallback remains strictly deterministic.
+            </p>
+          </div>
+
+          <!-- Instructions Editor -->
+          <div style="margin-bottom: 16px;">
+            <textarea 
+              id="agent-instructions-editor" 
+              class="support-textarea" 
+              style="min-height: 420px; width: 100%; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 13.5px; line-height: 1.6; background: var(--code-bg); color: var(--code-text); border: 1.5px solid var(--border-strong); border-radius: var(--radius-md); padding: 18px;"
+              spellcheck="false"
+              placeholder="<!-- Edit this file (or use the Admin panel) to guide the agent's scope and behavior. -->"
+            ></textarea>
+          </div>
+
+          <!-- Footer Actions -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <span id="instructions-status-msg" class="instructions-status" role="status" aria-live="polite"></span>
+              <span id="instructions-char-count" class="instructions-char-count">0 / 20,000</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button id="reset-instructions-btn" class="btn btn-secondary">Reset to Default</button>
+              <button id="save-instructions-btn" class="btn btn-primary" style="padding: 9px 24px;">
+                <span>💾 Save</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PDF Document Inspector Modal -->
+  <div id="doc-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-doc-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-doc-title">Approved PDF Document Viewer</h3>
+        <button id="modal-close-btn" class="modal-close-btn" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-meta-bar" style="margin-bottom: 14px; font-size: 12.5px; color: var(--text-muted);"></div>
+        <div class="page-tab-bar" id="modal-page-tabs"></div>
+        <div id="modal-page-content" style="background: var(--bg-surface-alt); border: 1px solid var(--border-subtle); padding: 16px; border-radius: var(--radius-sm); font-family: monospace; font-size: 12.5px; white-space: pre-wrap; max-height: 400px; overflow-y: auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Settings Modal (OpenAI & Providers) -->
+  <div id="ai-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-ai-title">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="modal-ai-title">✨ AI Articulation Engine Settings</h3>
+        <button id="modal-ai-close-btn" class="modal-close-btn" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          Configure OpenAI to articulate natural, contextual incident answers fetched directly from your approved PDF runbooks.
+        </p>
+
+        <!-- Current Status Banner -->
+        <div id="ai-status-banner" style="background: var(--bg-surface-alt); border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; font-size: 13px;">
+          <strong>Active Engine:</strong> <span id="current-ai-engine-text">Support Helper Built-in Neural Articulator</span>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label class="meta-label" for="setting-ai-provider">Select AI Articulation Mode:</label>
+          <select id="setting-ai-provider" class="filter-select" style="width: 100%; padding: 8px 12px; margin-top: 4px; font-size: 13.5px;">
+            <option value="openai">OpenAI API (GPT-4o / GPT-4o-mini) • Configurable with API Key</option>
+            <option value="builtin">Built-in Neural Articulator • Zero-Config / Offline / 100% PDF Grounded</option>
+            <option value="ollama">Ollama Local LLM • http://127.0.0.1:11434 (Llama 3 / Mistral)</option>
+          </select>
+        </div>
+
+        <!-- OpenAI Fields -->
+        <div id="openai-config-fields">
+          <div style="margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label class="meta-label" for="setting-openai-key">OpenAI API Key (sk-...):</label>
+              <button id="toggle-key-visibility-btn" style="background: transparent; border: none; font-size: 11.5px; color: var(--text-muted); cursor: pointer;">Show Key</button>
+            </div>
+            <input 
+              type="password" 
+              id="setting-openai-key" 
+              class="support-textarea" 
+              style="min-height: 42px; height: 42px; padding: 8px 12px; margin-top: 4px; font-family: monospace;" 
+              placeholder="sk-proj-..."
+              autocomplete="off"
+            >
+            <small style="font-size: 11.5px; color: var(--text-muted); display: block; margin-top: 4px;">
+              🔒 Your key is stored in your local project configuration and never shared externally.
+            </small>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label class="meta-label" for="setting-openai-model">OpenAI Model:</label>
+            <select id="setting-openai-model" class="filter-select" style="width: 100%; padding: 8px 12px; margin-top: 4px;">
+              <option value="gpt-4o-mini">gpt-4o-mini (Recommended • Fast, Cost-Effective & Grounded)</option>
+              <option value="gpt-4o">gpt-4o (High Intelligence & Complex Multi-Service Reasoning)</option>
+              <option value="gpt-3.5-turbo">gpt-3.5-turbo (Standard)</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label class="meta-label" for="setting-openai-baseurl">API Base URL (Optional / Custom Proxies):</label>
+            <input 
+              type="text" 
+              id="setting-openai-baseurl" 
+              class="support-textarea" 
+              style="min-height: 38px; height: 38px; padding: 6px 12px; margin-top: 4px; font-family: monospace; font-size: 12px;" 
+              value="https://api.openai.com/v1"
+            >
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+          <span id="ai-test-feedback" style="font-size: 12px; font-weight: 600;"></span>
+          <div style="display: flex; gap: 8px;">
+            <button id="modal-ai-cancel-btn" class="btn btn-secondary">Close</button>
+            <button id="save-openai-btn" class="btn btn-primary">
+              <span>💾 Save & Connect OpenAI</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="app-toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
